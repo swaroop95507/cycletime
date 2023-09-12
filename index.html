@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,7 +94,7 @@
     <div class="button-group">
       <button onclick="startTimer()">Start</button>
       <button onclick="stopTimer()">Stop</button>
-      <button onClick="clearDate()">Clear</button>
+      <button onClick="clearData()">Clear</button>
     </div>
     <p>
       <strong><u>START</u></strong> - Cycle is started<br>
@@ -147,12 +148,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     // ...existing JavaScript functions...
-  </script>
-</body>
-</html>
-
-
-    // ... existing JavaScript functions ...
   </script>
 </body>
 </html>
@@ -351,6 +346,39 @@
           options: chartOptions
         });
       }
+    }
+function clearData() {
+      // Clear cycle times array
+      cycleTimes.length = 0;
+
+      // Reset parts inspected counter
+      partsInspected = 0;
+      document.getElementById("partsInspected").textContent = "0";
+
+      // Clear error message if displayed
+      document.getElementById("errorMsg").style.display = "none";
+
+      // Clear cycle times table
+      updateCycleTimesTable();
+
+      // Clear summary table
+      updateSummaryTable();
+
+      // Clear line graph
+      const chart = window.myLine;
+      if (chart) {
+        chart.destroy(); // Destroy the existing chart instance
+        document.getElementById("chartContainer").innerHTML = '<canvas id="cycleTimeChart"></canvas>'; // Recreate the chart canvas
+      }
+
+      // Reset start and end time
+      startTime = null;
+      endTime = null;
+      timerRunning = false;
+
+      // Reset running time
+      runningTime = 0;
+      document.getElementById("runningTime").textContent = "0:00:000";
     }
   </script>
 </body>
