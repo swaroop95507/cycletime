@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#0b1220" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Cycle Time" />
@@ -14,7 +15,6 @@
       --bg: #08101d;
       --bg-2: #0b1220;
       --card: rgba(18, 27, 45, 0.92);
-      --card-strong: #101a2e;
       --text: #f8fafc;
       --muted: #94a3b8;
       --line: rgba(148, 163, 184, 0.16);
@@ -26,8 +26,6 @@
       --purple: #8b5cf6;
       --shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
       --radius-xl: 24px;
-      --radius-lg: 18px;
-      --radius-md: 14px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -139,9 +137,7 @@
       cursor: pointer;
     }
 
-    .card {
-      padding: 16px;
-    }
+    .card { padding: 16px; }
 
     .card-header {
       display: flex;
@@ -244,7 +240,7 @@
       font-weight: 800;
       cursor: pointer;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
-      transition: transform 0.12s ease, opacity 0.12s ease, filter 0.12s ease;
+      transition: transform 0.12s ease, opacity 0.12s ease;
     }
 
     button.action:active { transform: scale(0.98); }
@@ -494,16 +490,16 @@
         <div style="height:14px"></div>
 
         <div class="primary-actions">
-          <button id="startBtn" class="action btn-start">Start</button>
-          <button id="stopBtn" class="action btn-stop">Stop</button>
+          <button id="startBtn" class="action btn-start" type="button">Start</button>
+          <button id="stopBtn" class="action btn-stop" type="button">Stop</button>
         </div>
 
         <div style="height:10px"></div>
 
         <div class="secondary-actions">
-          <button id="deleteBtn" class="action btn-delete">Delete Last</button>
-          <button id="exportBtn" class="action btn-export">Export CSV</button>
-          <button id="clearBtn" class="action btn-clear">Reset All</button>
+          <button id="deleteBtn" class="action btn-delete" type="button">Delete Last</button>
+          <button id="exportBtn" class="action btn-export" type="button">Export CSV</button>
+          <button id="clearBtn" class="action btn-clear" type="button">Reset All</button>
         </div>
 
         <div style="height:12px"></div>
@@ -513,7 +509,7 @@
 
         <div style="height:12px"></div>
         <div class="helper">
-          Tap Start when the work begins and Stop when the cycle ends. Records stay on that device unless browser/app storage is cleared.
+          Tap Start when the work begins and Stop when the cycle ends. Records stay on that device unless browser or app storage is cleared.
         </div>
       </section>
 
@@ -560,8 +556,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "cycle_time_pwa_data_v3";
-    const SETTINGS_KEY = "cycle_time_pwa_settings_v3";
+    const STORAGE_KEY = 'cycle_time_pwa_data_v4';
+    const SETTINGS_KEY = 'cycle_time_pwa_settings_v4';
 
     let startTime = null;
     let timerRunning = false;
@@ -570,69 +566,70 @@
     let deferredPrompt = null;
 
     const els = {
-      partName: document.getElementById("partName"),
-      targetCycle: document.getElementById("targetCycle"),
-      shift: document.getElementById("shift"),
-      startBtn: document.getElementById("startBtn"),
-      stopBtn: document.getElementById("stopBtn"),
-      deleteBtn: document.getElementById("deleteBtn"),
-      exportBtn: document.getElementById("exportBtn"),
-      clearBtn: document.getElementById("clearBtn"),
-      installBtn: document.getElementById("installBtn"),
-      runningTime: document.getElementById("runningTime"),
-      partsInspected: document.getElementById("partsInspected"),
-      averageCycleTime: document.getElementById("averageCycleTime"),
-      fastestCycle: document.getElementById("fastestCycle"),
-      slowestCycle: document.getElementById("slowestCycle"),
-      recordsList: document.getElementById("recordsList"),
-      chartSvg: document.getElementById("chartSvg"),
-      errorMsg: document.getElementById("errorMsg"),
-      successMsg: document.getElementById("successMsg"),
-      statusPill: document.getElementById("statusPill")
+      partName: document.getElementById('partName'),
+      targetCycle: document.getElementById('targetCycle'),
+      shift: document.getElementById('shift'),
+      startBtn: document.getElementById('startBtn'),
+      stopBtn: document.getElementById('stopBtn'),
+      deleteBtn: document.getElementById('deleteBtn'),
+      exportBtn: document.getElementById('exportBtn'),
+      clearBtn: document.getElementById('clearBtn'),
+      installBtn: document.getElementById('installBtn'),
+      runningTime: document.getElementById('runningTime'),
+      partsInspected: document.getElementById('partsInspected'),
+      averageCycleTime: document.getElementById('averageCycleTime'),
+      fastestCycle: document.getElementById('fastestCycle'),
+      slowestCycle: document.getElementById('slowestCycle'),
+      recordsList: document.getElementById('recordsList'),
+      chartSvg: document.getElementById('chartSvg'),
+      errorMsg: document.getElementById('errorMsg'),
+      successMsg: document.getElementById('successMsg'),
+      statusPill: document.getElementById('statusPill')
     };
 
     function showMessage(type, text) {
-      els.errorMsg.style.display = "none";
-      els.successMsg.style.display = "none";
-      if (type === "error") {
+      els.errorMsg.style.display = 'none';
+      els.successMsg.style.display = 'none';
+
+      if (type === 'error') {
         els.errorMsg.textContent = text;
-        els.errorMsg.style.display = "block";
+        els.errorMsg.style.display = 'block';
       } else {
         els.successMsg.textContent = text;
-        els.successMsg.style.display = "block";
-        setTimeout(() => {
-          els.successMsg.style.display = "none";
+        els.successMsg.style.display = 'block';
+        setTimeout(function () {
+          els.successMsg.style.display = 'none';
         }, 1600);
       }
     }
 
     function setStatus(running) {
-      els.statusPill.textContent = running ? "Running" : "Ready";
-      els.statusPill.classList.toggle("running", running);
+      els.statusPill.textContent = running ? 'Running' : 'Ready';
+      els.statusPill.classList.toggle('running', running);
     }
 
     function formatDuration(ms) {
       const minutes = Math.floor(ms / 60000);
       const seconds = Math.floor((ms % 60000) / 1000);
       const milliseconds = ms % 1000;
-      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(milliseconds).padStart(3, "0")}`;
+      return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0') + '.' + String(milliseconds).padStart(3, '0');
     }
 
     function formatClockTime(timestamp) {
       return new Date(timestamp).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
       });
     }
 
     function escapeHtml(value) {
       return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
 
     function saveSettings() {
@@ -649,15 +646,15 @@
 
     function loadData() {
       try {
-        const savedCycles = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        const savedCycles = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
         cycles = Array.isArray(savedCycles) ? savedCycles : [];
 
-        const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
-        els.partName.value = settings.partName || "";
-        els.targetCycle.value = settings.targetCycle || "1.00";
-        els.shift.value = settings.shift || "";
+        const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+        els.partName.value = settings.partName || '';
+        els.targetCycle.value = settings.targetCycle || '1.00';
+        els.shift.value = settings.shift || '';
       } catch (error) {
-        console.error("Load error:", error);
+        console.error('Load error:', error);
         cycles = [];
       }
     }
@@ -669,20 +666,28 @@
 
     function startTimer() {
       if (timerRunning) {
-        showMessage("error", 'Cycle is already running. Stop it before starting again.');
+        showMessage('error', 'Cycle is already running. Stop it before starting again.');
         return;
       }
+
       startTime = Date.now();
       timerRunning = true;
       setStatus(true);
-      showMessage("success", "Cycle started.");
+      showMessage('success', 'Cycle started.');
       clearInterval(runningTimeInterval);
       runningTimeInterval = setInterval(updateRunningTime, 25);
     }
 
+    function renumberCycles() {
+      const total = cycles.length;
+      cycles = cycles.map(function (item, index) {
+        return Object.assign({}, item, { cycleNumber: total - index });
+      });
+    }
+
     function stopTimer() {
       if (!timerRunning || !startTime) {
-        showMessage("error", 'Tap Start first.');
+        showMessage('error', 'Tap Start first.');
         return;
       }
 
@@ -691,9 +696,9 @@
       const target = parseFloat(els.targetCycle.value) || 0;
 
       const cycle = {
-        cycleNumber: cycles.length + 1,
-        partName: (els.partName.value || "General").trim(),
-        shift: els.shift.value || "-",
+        cycleNumber: 1,
+        partName: (els.partName.value || 'General').trim(),
+        shift: els.shift.value || '-',
         startTimestamp: startTime,
         endTimestamp: endTime,
         startTime: formatClockTime(startTime),
@@ -704,103 +709,93 @@
       };
 
       cycles.unshift(cycle);
-      cycles = cycles.map((item, index) => ({ ...item, cycleNumber: cycles.length - index }));
+      renumberCycles();
 
       startTime = null;
       timerRunning = false;
       setStatus(false);
       clearInterval(runningTimeInterval);
-      els.runningTime.textContent = "00:00.000";
+      els.runningTime.textContent = '00:00.000';
 
       saveCycles();
       saveSettings();
       refreshUI();
-      showMessage("success", "Cycle recorded.");
+      showMessage('success', 'Cycle recorded.');
     }
 
     function deleteLastCycle() {
       if (timerRunning) {
-        showMessage("error", "Stop the current cycle before deleting.");
+        showMessage('error', 'Stop the current cycle before deleting.');
         return;
       }
       if (!cycles.length) {
-        showMessage("error", "No cycle records to delete.");
+        showMessage('error', 'No cycle records to delete.');
         return;
       }
+
       cycles.shift();
-      cycles = cycles.map((item, index) => ({ ...item, cycleNumber: cycles.length - index }));
+      renumberCycles();
       saveCycles();
       refreshUI();
-      showMessage("success", "Most recent cycle deleted.");
+      showMessage('success', 'Most recent cycle deleted.');
     }
 
     function clearData() {
       if (timerRunning) {
-        showMessage("error", "Stop the current cycle before reset.");
+        showMessage('error', 'Stop the current cycle before reset.');
         return;
       }
-      if (!confirm("Reset all saved cycle data on this device?")) return;
+      if (!window.confirm('Reset all saved cycle data on this device?')) return;
+
       cycles = [];
       saveCycles();
       refreshUI();
-      showMessage("success", "All cycle data cleared.");
+      showMessage('success', 'All cycle data cleared.');
     }
 
     function updateKPIs() {
       const total = cycles.length;
       els.partsInspected.textContent = total;
+
       if (!total) {
-        els.averageCycleTime.textContent = "0.00 min";
-        els.fastestCycle.textContent = "0.00 min";
-        els.slowestCycle.textContent = "0.00 min";
+        els.averageCycleTime.textContent = '0.00 min';
+        els.fastestCycle.textContent = '0.00 min';
+        els.slowestCycle.textContent = '0.00 min';
         return;
       }
-      const values = cycles.map(c => c.cycleMinutes);
-      const average = values.reduce((sum, v) => sum + v, 0) / total;
-      els.averageCycleTime.textContent = `${average.toFixed(2)} min`;
-      els.fastestCycle.textContent = `${Math.min(...values).toFixed(2)} min`;
-      els.slowestCycle.textContent = `${Math.max(...values).toFixed(2)} min`;
+
+      const values = cycles.map(function (c) { return c.cycleMinutes; });
+      const average = values.reduce(function (sum, v) { return sum + v; }, 0) / total;
+      els.averageCycleTime.textContent = average.toFixed(2) + ' min';
+      els.fastestCycle.textContent = Math.min.apply(null, values).toFixed(2) + ' min';
+      els.slowestCycle.textContent = Math.max.apply(null, values).toFixed(2) + ' min';
     }
 
     function updateRecords() {
-      els.recordsList.innerHTML = "";
+      els.recordsList.innerHTML = '';
+
       if (!cycles.length) {
-        els.recordsList.innerHTML = `<div class="empty-state">No cycle data recorded yet.</div>`;
+        els.recordsList.innerHTML = '<div class="empty-state">No cycle data recorded yet.</div>';
         return;
       }
 
-      cycles.forEach((cycle) => {
-        const card = document.createElement("article");
-        card.className = "record";
-        card.innerHTML = `
-          <div class="record-top">
-            <div>
-              <div class="record-title">#${cycle.cycleNumber} · ${escapeHtml(cycle.partName)}</div>
-              <div class="record-sub">Shift ${escapeHtml(cycle.shift)}</div>
-            </div>
-            <span class="badge ${cycle.withinTarget ? "good" : "bad"}">
-              ${cycle.withinTarget ? "Within Target" : "Over Target"}
-            </span>
-          </div>
-          <div class="record-grid">
-            <div class="meta">
-              <div class="meta-label">Cycle Time</div>
-              <div class="meta-value">${cycle.cycleMinutes.toFixed(3)} min</div>
-            </div>
-            <div class="meta">
-              <div class="meta-label">Target</div>
-              <div class="meta-value">${cycle.targetMinutes.toFixed(2)} min</div>
-            </div>
-            <div class="meta">
-              <div class="meta-label">Start</div>
-              <div class="meta-value">${cycle.startTime}</div>
-            </div>
-            <div class="meta">
-              <div class="meta-label">End</div>
-              <div class="meta-value">${cycle.endTime}</div>
-            </div>
-          </div>
-        `;
+      cycles.forEach(function (cycle) {
+        const card = document.createElement('article');
+        card.className = 'record';
+        card.innerHTML =
+          '<div class="record-top">' +
+            '<div>' +
+              '<div class="record-title">#' + cycle.cycleNumber + ' · ' + escapeHtml(cycle.partName) + '</div>' +
+              '<div class="record-sub">Shift ' + escapeHtml(cycle.shift) + '</div>' +
+            '</div>' +
+            '<span class="badge ' + (cycle.withinTarget ? 'good' : 'bad') + '">' + (cycle.withinTarget ? 'Within Target' : 'Over Target') + '</span>' +
+          '</div>' +
+          '<div class="record-grid">' +
+            '<div class="meta"><div class="meta-label">Cycle Time</div><div class="meta-value">' + cycle.cycleMinutes.toFixed(3) + ' min</div></div>' +
+            '<div class="meta"><div class="meta-label">Target</div><div class="meta-value">' + cycle.targetMinutes.toFixed(2) + ' min</div></div>' +
+            '<div class="meta"><div class="meta-label">Start</div><div class="meta-value">' + cycle.startTime + '</div></div>' +
+            '<div class="meta"><div class="meta-label">End</div><div class="meta-value">' + cycle.endTime + '</div></div>' +
+          '</div>';
         els.recordsList.appendChild(card);
       });
     }
@@ -810,50 +805,50 @@
       const width = 800;
       const height = 220;
       const padding = { top: 20, right: 18, bottom: 28, left: 40 };
-      svg.innerHTML = "";
+      svg.innerHTML = '';
 
-      const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      bg.setAttribute("x", 0);
-      bg.setAttribute("y", 0);
-      bg.setAttribute("width", width);
-      bg.setAttribute("height", height);
-      bg.setAttribute("rx", 18);
-      bg.setAttribute("fill", "#08101d");
+      const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bg.setAttribute('x', 0);
+      bg.setAttribute('y', 0);
+      bg.setAttribute('width', width);
+      bg.setAttribute('height', height);
+      bg.setAttribute('rx', 18);
+      bg.setAttribute('fill', '#08101d');
       svg.appendChild(bg);
 
       if (!cycles.length) {
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        text.setAttribute("x", width / 2);
-        text.setAttribute("y", height / 2);
-        text.setAttribute("text-anchor", "middle");
-        text.setAttribute("fill", "#94a3b8");
-        text.setAttribute("font-size", "16");
-        text.textContent = "No cycle data yet";
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', width / 2);
+        text.setAttribute('y', height / 2);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('fill', '#94a3b8');
+        text.setAttribute('font-size', '16');
+        text.textContent = 'No cycle data yet';
         svg.appendChild(text);
         return;
       }
 
-      const chartCycles = [...cycles].slice(0, 12).reverse();
-      const values = chartCycles.map(c => c.cycleMinutes);
-      const maxValue = Math.max(...values, parseFloat(els.targetCycle.value) || 0, 1);
+      const chartCycles = cycles.slice(0, 12).reverse();
+      const values = chartCycles.map(function (c) { return c.cycleMinutes; });
+      const maxValue = Math.max.apply(null, values.concat([parseFloat(els.targetCycle.value) || 0, 1]));
       const chartW = width - padding.left - padding.right;
       const chartH = height - padding.top - padding.bottom;
 
       for (let i = 0; i <= 4; i++) {
         const y = padding.top + (chartH / 4) * i;
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("x1", padding.left);
-        line.setAttribute("x2", width - padding.right);
-        line.setAttribute("y1", y);
-        line.setAttribute("y2", y);
-        line.setAttribute("stroke", "rgba(148,163,184,0.15)");
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', padding.left);
+        line.setAttribute('x2', width - padding.right);
+        line.setAttribute('y1', y);
+        line.setAttribute('y2', y);
+        line.setAttribute('stroke', 'rgba(148,163,184,0.15)');
         svg.appendChild(line);
 
-        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        label.setAttribute("x", 6);
-        label.setAttribute("y", y + 4);
-        label.setAttribute("fill", "#94a3b8");
-        label.setAttribute("font-size", "11");
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', 6);
+        label.setAttribute('y', y + 4);
+        label.setAttribute('fill', '#94a3b8');
+        label.setAttribute('font-size', '11');
         label.textContent = ((maxValue * (4 - i)) / 4).toFixed(2);
         svg.appendChild(label);
       }
@@ -861,77 +856,83 @@
       const target = parseFloat(els.targetCycle.value) || 0;
       if (target > 0) {
         const targetY = padding.top + chartH - (target / maxValue) * chartH;
-        const targetLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        targetLine.setAttribute("x1", padding.left);
-        targetLine.setAttribute("x2", width - padding.right);
-        targetLine.setAttribute("y1", targetY);
-        targetLine.setAttribute("y2", targetY);
-        targetLine.setAttribute("stroke", "#f59e0b");
-        targetLine.setAttribute("stroke-width", "2");
-        targetLine.setAttribute("stroke-dasharray", "6 6");
+        const targetLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        targetLine.setAttribute('x1', padding.left);
+        targetLine.setAttribute('x2', width - padding.right);
+        targetLine.setAttribute('y1', targetY);
+        targetLine.setAttribute('y2', targetY);
+        targetLine.setAttribute('stroke', '#f59e0b');
+        targetLine.setAttribute('stroke-width', '2');
+        targetLine.setAttribute('stroke-dasharray', '6 6');
         svg.appendChild(targetLine);
       }
 
-      const points = values.map((value, index) => {
+      const points = values.map(function (value, index) {
         const x = padding.left + (chartW * index) / Math.max(values.length - 1, 1);
         const y = padding.top + chartH - (value / maxValue) * chartH;
-        return { x, y };
+        return { x: x, y: y };
       });
 
-      const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-      polyline.setAttribute("points", points.map(p => `${p.x},${p.y}`).join(" "));
-      polyline.setAttribute("fill", "none");
-      polyline.setAttribute("stroke", "#60a5fa");
-      polyline.setAttribute("stroke-width", "3");
-      polyline.setAttribute("stroke-linecap", "round");
-      polyline.setAttribute("stroke-linejoin", "round");
+      const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+      polyline.setAttribute('points', points.map(function (p) { return p.x + ',' + p.y; }).join(' '));
+      polyline.setAttribute('fill', 'none');
+      polyline.setAttribute('stroke', '#60a5fa');
+      polyline.setAttribute('stroke-width', '3');
+      polyline.setAttribute('stroke-linecap', 'round');
+      polyline.setAttribute('stroke-linejoin', 'round');
       svg.appendChild(polyline);
 
-      points.forEach((point) => {
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttribute("cx", point.x);
-        circle.setAttribute("cy", point.y);
-        circle.setAttribute("r", 4.5);
-        circle.setAttribute("fill", "#bfdbfe");
-        circle.setAttribute("stroke", "#2563eb");
-        circle.setAttribute("stroke-width", "2");
+      points.forEach(function (point) {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', point.x);
+        circle.setAttribute('cy', point.y);
+        circle.setAttribute('r', 4.5);
+        circle.setAttribute('fill', '#bfdbfe');
+        circle.setAttribute('stroke', '#2563eb');
+        circle.setAttribute('stroke-width', '2');
         svg.appendChild(circle);
       });
     }
 
     function exportCSV() {
       if (!cycles.length) {
-        showMessage("error", "No cycle data available to export.");
+        showMessage('error', 'No cycle data available to export.');
         return;
       }
 
-      const headers = ["Cycle Number", "Part/Process", "Shift", "Start Time", "End Time", "Cycle Time (min)", "Target (min)", "Status"];
-      const rows = [...cycles].reverse().map(c => [
-        c.cycleNumber,
-        c.partName,
-        c.shift,
-        c.startTime,
-        c.endTime,
-        c.cycleMinutes.toFixed(3),
-        c.targetMinutes.toFixed(2),
-        c.withinTarget ? "Within Target" : "Over Target"
-      ]);
+      const headers = ['Cycle Number', 'Part/Process', 'Shift', 'Start Time', 'End Time', 'Cycle Time (min)', 'Target (min)', 'Status'];
+      const rows = cycles.slice().reverse().map(function (c) {
+        return [
+          c.cycleNumber,
+          c.partName,
+          c.shift,
+          c.startTime,
+          c.endTime,
+          c.cycleMinutes.toFixed(3),
+          c.targetMinutes.toFixed(2),
+          c.withinTarget ? 'Within Target' : 'Over Target'
+        ];
+      });
 
-      const csv = [headers, ...rows]
-        .map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(","))
-        .join("
-");
+      const csv = [headers].concat(rows)
+        .map(function (row) {
+          return row.map(function (value) {
+            return '"' + String(value).replace(/"/g, '""') + '"';
+          }).join(',');
+        })
+        .join('
+');
 
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = url;
-      link.download = `cycle-time-data-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.download = 'cycle-time-data-' + new Date().toISOString().slice(0, 10) + '.csv';
       document.body.appendChild(link);
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      showMessage("success", "CSV exported.");
+      showMessage('success', 'CSV exported.');
     }
 
     function refreshUI() {
@@ -943,38 +944,41 @@
     }
 
     async function registerServiceWorker() {
-      if ("serviceWorker" in navigator) {
+      if ('serviceWorker' in navigator) {
         try {
-          await navigator.serviceWorker.register("./service-worker.js");
+          await navigator.serviceWorker.register('./service-worker.js');
         } catch (error) {
-          console.error("Service worker registration failed:", error);
+          console.error('Service worker registration failed:', error);
         }
       }
     }
 
-    window.addEventListener("beforeinstallprompt", (event) => {
+    window.addEventListener('beforeinstallprompt', function (event) {
       event.preventDefault();
       deferredPrompt = event;
-      els.installBtn.style.display = "inline-block";
+      els.installBtn.style.display = 'inline-block';
     });
 
-    els.installBtn.addEventListener("click", async () => {
+    els.installBtn.addEventListener('click', async function () {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
       await deferredPrompt.userChoice;
       deferredPrompt = null;
-      els.installBtn.style.display = "none";
+      els.installBtn.style.display = 'none';
     });
 
-    els.startBtn.addEventListener("click", startTimer);
-    els.stopBtn.addEventListener("click", stopTimer);
-    els.deleteBtn.addEventListener("click", deleteLastCycle);
-    els.clearBtn.addEventListener("click", clearData);
-    els.exportBtn.addEventListener("click", exportCSV);
+    els.startBtn.addEventListener('click', startTimer);
+    els.stopBtn.addEventListener('click', stopTimer);
+    els.deleteBtn.addEventListener('click', deleteLastCycle);
+    els.clearBtn.addEventListener('click', clearData);
+    els.exportBtn.addEventListener('click', exportCSV);
 
-    els.partName.addEventListener("input", saveSettings);
-    els.targetCycle.addEventListener("input", () => { saveSettings(); refreshUI(); });
-    els.shift.addEventListener("change", saveSettings);
+    els.partName.addEventListener('input', saveSettings);
+    els.targetCycle.addEventListener('input', function () {
+      saveSettings();
+      refreshUI();
+    });
+    els.shift.addEventListener('change', saveSettings);
 
     loadData();
     setStatus(false);
