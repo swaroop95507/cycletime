@@ -1,385 +1,879 @@
+# Cycle Time PWA
 
+Use these 4 files.
+
+## 1) `index.html`
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cycle Time Calculator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Cycle Time" />
+  <title>Cycle Time Micro App</title>
+  <link rel="manifest" href="manifest.json" />
   <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --card-2: #1f2937;
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --line: #334155;
+      --primary: #2563eb;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --purple: #7c3aed;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+      color: var(--text);
+    }
+
     body {
-      background-color: lightblue;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .header, .card {
+      background: rgba(17, 24, 39, 0.94);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .status-pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: 1px solid var(--line);
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+
+    .status-pill.running {
+      background: rgba(22, 163, 74, 0.18);
+      border-color: rgba(22, 163, 74, 0.4);
+      color: #86efac;
+    }
+
+    .install-btn {
+      margin-top: 12px;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+    }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .controls {
+      display: grid;
+      gap: 12px;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    button.action {
+      border: none;
+      border-radius: 12px;
+      padding: 14px 12px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      color: white;
+    }
+
+    button.action:hover { transform: translateY(-1px); }
+    button.action:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .btn-start { background: var(--success); }
+    .btn-stop { background: var(--danger); }
+    .btn-delete { background: var(--warning); }
+    .btn-export { background: var(--purple); }
+    .btn-clear { background: #475569; }
+
+    .settings {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .field {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
+      gap: 6px;
     }
 
-    .container {
-      background-color: white;
-      padding: 20px;
-      border: 2px solid navy;
-      border-radius: 10px;
-      max-width: 600px;
+    .field label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .field input, .field select {
       width: 100%;
-    }
-
-    .button-group {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
-      position: sticky;
-      bottom: 20px;
-      background-color: white;
-      padding: 10px;
-      border: 2px solid navy;
-      border-radius: 10px;
-    }
-
-    button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 18px;
-      background-color: navy;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #0f172a;
       color: white;
+      padding: 12px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .kpi {
+      background: var(--card-2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .kpi-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 1.45rem;
+      font-weight: 800;
+    }
+
+    .running-time-box {
+      margin-top: 12px;
+      padding: 16px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(37,99,235,0.18), rgba(30,41,59,0.55));
+      border: 1px solid rgba(37,99,235,0.3);
+      text-align: center;
+    }
+
+    .running-label {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .running-value {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .message {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .message.error {
+      background: rgba(220, 38, 38, 0.15);
+      border: 1px solid rgba(220, 38, 38, 0.35);
+      color: #fecaca;
+    }
+
+    .message.success {
+      background: rgba(22, 163, 74, 0.15);
+      border: 1px solid rgba(22, 163, 74, 0.35);
+      color: #bbf7d0;
+    }
+
+    .chart-wrap {
+      margin-top: 10px;
+      border-radius: 14px;
+      background: #0b1220;
+      border: 1px solid var(--line);
+      padding: 10px;
+      min-height: 280px;
+    }
+
+    #chartSvg {
+      width: 100%;
+      height: 260px;
+      display: block;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      margin-top: 10px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
+      min-width: 900px;
+      background: #0b1220;
     }
 
     th, td {
-      border: 1px solid navy;
-      padding: 8px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
       text-align: center;
+      font-size: 0.95rem;
     }
 
     th {
-      background-color: navy;
+      position: sticky;
+      top: 0;
+      background: #1e293b;
       color: white;
+      z-index: 1;
     }
 
-    #errorMsg {
-      color: red;
-      display: none;
+    .badge {
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    .badge.good {
+      background: rgba(22, 163, 74, 0.2);
+      color: #86efac;
+      border: 1px solid rgba(22, 163, 74, 0.35);
+    }
+
+    .badge.bad {
+      background: rgba(220, 38, 38, 0.2);
+      color: #fecaca;
+      border: 1px solid rgba(220, 38, 38, 0.35);
+    }
+
+    .helper {
       margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
     }
 
-    /* Add the scrolling feature for the table containers */
-    .table-container {
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    /* Style the heading */
-    h1 {
+    .footer-note {
       text-align: center;
-      text-transform: uppercase;
-      font-weight: bold;
-      text-decoration: underline;
+      color: #94a3b8;
+      font-size: 0.82rem;
+      padding-bottom: 10px;
     }
 
-    #chartContainer {
-      max-width: 600px;
-      max-height: 400px;
-      overflow-y: auto;
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .button-row { grid-template-columns: repeat(2, 1fr); }
+      .settings { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 10px; }
+      .title { font-size: 1.35rem; }
+      .button-row { grid-template-columns: 1fr; }
+      .running-value { font-size: 1.6rem; }
+      .card, .header { padding: 14px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>CYCLE TIME CALCULATOR</h1>
-    <div class="button-group">
-      <button onclick="startTimer()">Start</button>
-      <button onclick="stopTimer()">Stop</button>
-      <button onClick="clearData()">Clear</button>
-    </div>
-    <p>
-      <strong><u>START</u></strong> - Cycle is started<br>
-      <strong><u>STOP</u></strong> - Cycle is complete
-    </p>
-
-    <p>Number of parts inspected: <span id="partsInspected">0</span></p>
-
-    <!-- Display the running time here -->
-    <p>Running Time: <span id="runningTime">0:00:000</span></p>
-
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Cycle Number</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Cycle Time</th>
-          </tr>
-        </thead>
-        <tbody id="cycleTimesTable">
-        </tbody>
-      </table>
+  <div class="app">
+    <div class="header">
+      <div class="header-top">
+        <div>
+          <h1 class="title">Cycle Time Micro App</h1>
+          <p class="subtitle">Installable PWA with offline support and local device storage</p>
+          <button id="installBtn" class="install-btn">Install App</button>
+        </div>
+        <div id="statusPill" class="status-pill">Ready</div>
+      </div>
     </div>
 
-    <p id="errorMsg">Error: Click "Stop" before starting a new cycle.</p>
+    <div class="grid">
+      <div class="card">
+        <h2 class="section-title">Controls</h2>
 
-    <div id="summaryTable" class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Total Parts</th>
-            <th>Average Cycle Time</th>
-          </tr>
-        </thead>
-        <tbody id="summaryTableBody">
-          <tr>
-            <td id="totalParts">0</td>
-            <td id="averageCycleTime">0 minutes</td>
-          </tr>
-        </tbody>
-      </table>
+        <div class="controls">
+          <div class="settings">
+            <div class="field">
+              <label for="partName">Part / Process Name</label>
+              <input id="partName" type="text" placeholder="Example: Front Bracket Inspection" />
+            </div>
+            <div class="field">
+              <label for="targetCycle">Target Cycle Time (minutes)</label>
+              <input id="targetCycle" type="number" min="0" step="0.01" value="1.00" />
+            </div>
+            <div class="field">
+              <label for="shift">Shift</label>
+              <select id="shift">
+                <option value="">Select Shift</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button id="startBtn" class="action btn-start">Start</button>
+            <button id="stopBtn" class="action btn-stop">Stop</button>
+            <button id="deleteBtn" class="action btn-delete">Delete Last</button>
+            <button id="exportBtn" class="action btn-export">Export CSV</button>
+            <button id="clearBtn" class="action btn-clear">Reset All</button>
+          </div>
+
+          <div class="running-time-box">
+            <div class="running-label">Running Time</div>
+            <div class="running-value" id="runningTime">00:00.000</div>
+          </div>
+
+          <div id="errorMsg" class="message error"></div>
+          <div id="successMsg" class="message success"></div>
+
+          <div class="helper">
+            Start when the cycle begins and stop when it ends. Data is saved on the device using local storage, so when installed on mobile it stays inside that device/browser storage.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Live Summary</h2>
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-label">Total Cycles</div>
+            <div class="kpi-value" id="partsInspected">0</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Average Cycle</div>
+            <div class="kpi-value" id="averageCycleTime">0.00 min</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Fastest Cycle</div>
+            <div class="kpi-value" id="fastestCycle">0.00 min</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Slowest Cycle</div>
+            <div class="kpi-value" id="slowestCycle">0.00 min</div>
+          </div>
+        </div>
+
+        <div class="chart-wrap">
+          <svg id="chartSvg" viewBox="0 0 800 260" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
     </div>
 
-    <div id="chartContainer">
-      <canvas id="cycleTimeChart"></canvas>
+    <div class="card">
+      <h2 class="section-title">Cycle Records</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cycle #</th>
+              <th>Part / Process</th>
+              <th>Shift</th>
+              <th>Start Time</th>
+              <th>End Time</th>
+              <th>Cycle Time (min)</th>
+              <th>Target</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="cycleTimesTable"></tbody>
+        </table>
+      </div>
     </div>
+
+    <div class="footer-note">Offline-ready PWA. Works without internet after first load.</div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // ...existing JavaScript functions...
-  </script>
-</body>
-</html>
+    const STORAGE_KEY = "cycle_time_pwa_data_v2";
+    const SETTINGS_KEY = "cycle_time_pwa_settings_v2";
 
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    let startTime;
-    let endTime;
-    let partsInspected = 0;
-    const cycleTimes = [];
+    let startTime = null;
     let timerRunning = false;
-    let runningTimeInterval;
-    let runningTime = 0;
+    let runningTimeInterval = null;
+    let cycles = [];
+    let deferredPrompt = null;
 
-    function startTimer() {
-      if (timerRunning) {
-        // Display error message if timer is already running
-        document.getElementById("errorMsg").style.display = "block";
+    const els = {
+      partName: document.getElementById("partName"),
+      targetCycle: document.getElementById("targetCycle"),
+      shift: document.getElementById("shift"),
+      startBtn: document.getElementById("startBtn"),
+      stopBtn: document.getElementById("stopBtn"),
+      deleteBtn: document.getElementById("deleteBtn"),
+      exportBtn: document.getElementById("exportBtn"),
+      clearBtn: document.getElementById("clearBtn"),
+      installBtn: document.getElementById("installBtn"),
+      runningTime: document.getElementById("runningTime"),
+      partsInspected: document.getElementById("partsInspected"),
+      averageCycleTime: document.getElementById("averageCycleTime"),
+      fastestCycle: document.getElementById("fastestCycle"),
+      slowestCycle: document.getElementById("slowestCycle"),
+      cycleTimesTable: document.getElementById("cycleTimesTable"),
+      chartSvg: document.getElementById("chartSvg"),
+      errorMsg: document.getElementById("errorMsg"),
+      successMsg: document.getElementById("successMsg"),
+      statusPill: document.getElementById("statusPill")
+    };
+
+    function showMessage(type, text) {
+      els.errorMsg.style.display = "none";
+      els.successMsg.style.display = "none";
+      if (type === "error") {
+        els.errorMsg.textContent = text;
+        els.errorMsg.style.display = "block";
       } else {
-        // Clear error message if any
-        document.getElementById("errorMsg").style.display = "none";
-
-        startTime = Date.now();
-        timerRunning = true;
-
-        // Start the running time interval
-        runningTimeInterval = setInterval(updateRunningTime, 10);
+        els.successMsg.textContent = text;
+        els.successMsg.style.display = "block";
+        setTimeout(() => { els.successMsg.style.display = "none"; }, 1800);
       }
     }
 
-    function stopTimer() {
-      if (startTime) {
-        endTime = Date.now();
-        const cycleTime = (endTime - startTime) / 1000 / 60; // Cycle time in minutes
-
-        // Increment parts inspected counter
-        partsInspected++;
-        document.getElementById("partsInspected").textContent = partsInspected;
-
-        // Add cycle time to the array
-        cycleTimes.push({
-          cycleNumber: partsInspected,
-          startTime: new Date(startTime).toLocaleTimeString(),
-          endTime: new Date(endTime).toLocaleTimeString(),
-          cycleTime: `${cycleTime.toFixed(2)} minutes`
-        });
-
-        // Update the table with cycle times
-        updateCycleTimesTable();
-
-        // Update the summary table
-        updateSummaryTable();
-
-        // Reset start and end time for the next cycle
-        startTime = null;
-        endTime = null;
-        timerRunning = false;
-
-        // Reset the running time
-        clearInterval(runningTimeInterval);
-        runningTime = 0;
-        document.getElementById("runningTime").textContent = "0:00:000";
-
-        // Update the line graph
-        updateLineGraph();
+    function setStatus(running) {
+      if (running) {
+        els.statusPill.textContent = "Running";
+        els.statusPill.classList.add("running");
       } else {
-        alert("Click the 'Start' button first to begin inspecting a part.");
+        els.statusPill.textContent = "Ready";
+        els.statusPill.classList.remove("running");
       }
     }
 
-    function updateCycleTimesTable() {
-      const tableBody = document.getElementById("cycleTimesTable");
-      tableBody.innerHTML = "";
+    function formatDuration(ms) {
+      const minutes = Math.floor(ms / 60000);
+      const seconds = Math.floor((ms % 60000) / 1000);
+      const milliseconds = ms % 1000;
+      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(milliseconds).padStart(3, "0")}`;
+    }
 
-      cycleTimes.forEach((cycle) => {
-        const row = tableBody.insertRow();
-        const cycleNumberCell = row.insertCell();
-        const startTimeCell = row.insertCell();
-        const endTimeCell = row.insertCell();
-        const cycleTimeCell = row.insertCell();
-
-        cycleNumberCell.textContent = cycle.cycleNumber;
-        startTimeCell.textContent = cycle.startTime;
-        endTimeCell.textContent = cycle.endTime;
-        cycleTimeCell.textContent = cycle.cycleTime;
+    function formatClockTime(timestamp) {
+      return new Date(timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
       });
     }
 
-    function updateSummaryTable() {
-      const summaryTableBody = document.getElementById("summaryTableBody");
-      summaryTableBody.innerHTML = "";
+    function saveSettings() {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+        partName: els.partName.value,
+        targetCycle: els.targetCycle.value,
+        shift: els.shift.value
+      }));
+    }
 
-      const totalPartsCell = document.createElement("td");
-      totalPartsCell.textContent = partsInspected;
+    function saveCycles() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cycles));
+    }
 
-      const totalCycleTimeCell = document.createElement("td");
-      const totalCycleTimeMinutes = cycleTimes.reduce((total, cycle) => total + parseFloat(cycle.cycleTime.split(' ')[0]), 0);
-      const averageCycleTime = totalCycleTimeMinutes / partsInspected;
-      totalCycleTimeCell.textContent = `${averageCycleTime.toFixed(2)} minutes`;
+    function loadData() {
+      try {
+        const savedCycles = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        cycles = Array.isArray(savedCycles) ? savedCycles : [];
 
-      const row = summaryTableBody.insertRow();
-      row.appendChild(totalPartsCell);
-      row.appendChild(totalCycleTimeCell);
+        const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
+        els.partName.value = settings.partName || "";
+        els.targetCycle.value = settings.targetCycle || "1.00";
+        els.shift.value = settings.shift || "";
+      } catch (error) {
+        console.error("Load error:", error);
+        cycles = [];
+      }
     }
 
     function updateRunningTime() {
+      if (!timerRunning || !startTime) return;
+      els.runningTime.textContent = formatDuration(Date.now() - startTime);
+    }
+
+    function startTimer() {
       if (timerRunning) {
-        const currentTime = Date.now();
-        runningTime = currentTime - startTime;
-        document.getElementById("runningTime").textContent = formatRunningTime(runningTime);
+        showMessage("error", 'Cycle is already running. Click "Stop" before starting again.');
+        return;
+      }
+
+      startTime = Date.now();
+      timerRunning = true;
+      setStatus(true);
+      showMessage("success", "Cycle started.");
+      clearInterval(runningTimeInterval);
+      runningTimeInterval = setInterval(updateRunningTime, 25);
+    }
+
+    function stopTimer() {
+      if (!timerRunning || !startTime) {
+        showMessage("error", 'Click "Start" first.');
+        return;
+      }
+
+      const endTime = Date.now();
+      const cycleMinutes = (endTime - startTime) / 60000;
+      const target = parseFloat(els.targetCycle.value) || 0;
+
+      const cycle = {
+        cycleNumber: cycles.length + 1,
+        partName: (els.partName.value || "General").trim(),
+        shift: els.shift.value || "-",
+        startTimestamp: startTime,
+        endTimestamp: endTime,
+        startTime: formatClockTime(startTime),
+        endTime: formatClockTime(endTime),
+        cycleMinutes: Number(cycleMinutes.toFixed(3)),
+        targetMinutes: Number(target.toFixed(3)),
+        withinTarget: target === 0 ? true : cycleMinutes <= target
+      };
+
+      cycles.push(cycle);
+      startTime = null;
+      timerRunning = false;
+      setStatus(false);
+      clearInterval(runningTimeInterval);
+      els.runningTime.textContent = "00:00.000";
+
+      saveCycles();
+      saveSettings();
+      refreshUI();
+      showMessage("success", "Cycle recorded.");
+    }
+
+    function deleteLastCycle() {
+      if (timerRunning) {
+        showMessage("error", "Stop the current cycle before deleting.");
+        return;
+      }
+      if (!cycles.length) {
+        showMessage("error", "No cycle records to delete.");
+        return;
+      }
+      cycles.pop();
+      cycles = cycles.map((cycle, index) => ({ ...cycle, cycleNumber: index + 1 }));
+      saveCycles();
+      refreshUI();
+      showMessage("success", "Last cycle deleted.");
+    }
+
+    function clearData() {
+      if (timerRunning) {
+        showMessage("error", "Stop the current cycle before reset.");
+        return;
+      }
+      if (!confirm("Reset all saved cycle data on this device?")) return;
+      cycles = [];
+      saveCycles();
+      refreshUI();
+      showMessage("success", "All cycle data cleared.");
+    }
+
+    function updateKPIs() {
+      const total = cycles.length;
+      els.partsInspected.textContent = total;
+
+      if (!total) {
+        els.averageCycleTime.textContent = "0.00 min";
+        els.fastestCycle.textContent = "0.00 min";
+        els.slowestCycle.textContent = "0.00 min";
+        return;
+      }
+
+      const values = cycles.map(c => c.cycleMinutes);
+      const average = values.reduce((sum, v) => sum + v, 0) / total;
+      els.averageCycleTime.textContent = `${average.toFixed(2)} min`;
+      els.fastestCycle.textContent = `${Math.min(...values).toFixed(2)} min`;
+      els.slowestCycle.textContent = `${Math.max(...values).toFixed(2)} min`;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function updateTable() {
+      els.cycleTimesTable.innerHTML = "";
+      if (!cycles.length) {
+        els.cycleTimesTable.innerHTML = `<tr><td colspan="8" style="color:#94a3b8; padding:18px;">No cycle data recorded yet.</td></tr>`;
+        return;
+      }
+
+      for (const cycle of cycles) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${cycle.cycleNumber}</td>
+          <td>${escapeHtml(cycle.partName)}</td>
+          <td>${escapeHtml(cycle.shift)}</td>
+          <td>${cycle.startTime}</td>
+          <td>${cycle.endTime}</td>
+          <td>${cycle.cycleMinutes.toFixed(3)}</td>
+          <td>${cycle.targetMinutes.toFixed(2)}</td>
+          <td><span class="badge ${cycle.withinTarget ? "good" : "bad"}">${cycle.withinTarget ? "Within Target" : "Over Target"}</span></td>
+        `;
+        els.cycleTimesTable.appendChild(row);
       }
     }
 
-    function formatRunningTime(timeInMilliseconds) {
-      const minutes = Math.floor(timeInMilliseconds / 60000);
-      const seconds = Math.floor((timeInMilliseconds % 60000) / 1000);
-      const milliseconds = timeInMilliseconds % 1000;
-      return `${minutes}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(3, '0')}`;
-    }
+    function updateChart() {
+      const svg = els.chartSvg;
+      const width = 800;
+      const height = 260;
+      const padding = { top: 20, right: 20, bottom: 35, left: 45 };
+      svg.innerHTML = "";
 
-    // Function to create and update the line graph
-    function updateLineGraph() {
-      const ctx = document.getElementById('cycleTimeChart').getContext('2d');
+      const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      bg.setAttribute("x", 0);
+      bg.setAttribute("y", 0);
+      bg.setAttribute("width", width);
+      bg.setAttribute("height", height);
+      bg.setAttribute("fill", "#0b1220");
+      svg.appendChild(bg);
 
-      const labels = cycleTimes.map(cycle => cycle.cycleNumber);
-      const cycleTimesData = cycleTimes.map(cycle => {
-        const timeParts = cycle.cycleTime.split(' ');
-        const timeInMinutes = parseFloat(timeParts[0]);
-        return timeInMinutes;
+      if (!cycles.length) {
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", width / 2);
+        text.setAttribute("y", height / 2);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("fill", "#94a3b8");
+        text.setAttribute("font-size", "16");
+        text.textContent = "No cycle data yet";
+        svg.appendChild(text);
+        return;
+      }
+
+      const values = cycles.map(c => c.cycleMinutes);
+      const maxValue = Math.max(...values, parseFloat(els.targetCycle.value) || 0, 1);
+      const chartW = width - padding.left - padding.right;
+      const chartH = height - padding.top - padding.bottom;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartH / 4) * i;
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", padding.left);
+        line.setAttribute("x2", width - padding.right);
+        line.setAttribute("y1", y);
+        line.setAttribute("y2", y);
+        line.setAttribute("stroke", "#334155");
+        svg.appendChild(line);
+
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("x", 8);
+        label.setAttribute("y", y + 4);
+        label.setAttribute("fill", "#94a3b8");
+        label.setAttribute("font-size", "12");
+        label.textContent = ((maxValue * (4 - i)) / 4).toFixed(2);
+        svg.appendChild(label);
+      }
+
+      const axisX = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      axisX.setAttribute("x1", padding.left);
+      axisX.setAttribute("x2", width - padding.right);
+      axisX.setAttribute("y1", height - padding.bottom);
+      axisX.setAttribute("y2", height - padding.bottom);
+      axisX.setAttribute("stroke", "#94a3b8");
+      svg.appendChild(axisX);
+
+      const axisY = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      axisY.setAttribute("x1", padding.left);
+      axisY.setAttribute("x2", padding.left);
+      axisY.setAttribute("y1", padding.top);
+      axisY.setAttribute("y2", height - padding.bottom);
+      axisY.setAttribute("stroke", "#94a3b8");
+      svg.appendChild(axisY);
+
+      const target = parseFloat(els.targetCycle.value) || 0;
+      if (target > 0) {
+        const targetY = padding.top + chartH - (target / maxValue) * chartH;
+        const targetLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        targetLine.setAttribute("x1", padding.left);
+        targetLine.setAttribute("x2", width - padding.right);
+        targetLine.setAttribute("y1", targetY);
+        targetLine.setAttribute("y2", targetY);
+        targetLine.setAttribute("stroke", "#f59e0b");
+        targetLine.setAttribute("stroke-dasharray", "6 6");
+        targetLine.setAttribute("stroke-width", "2");
+        svg.appendChild(targetLine);
+      }
+
+      const points = values.map((value, index) => {
+        const x = padding.left + (chartW * index) / Math.max(values.length - 1, 1);
+        const y = padding.top + chartH - (value / maxValue) * chartH;
+        return { x, y, value, index: index + 1 };
       });
 
-      const chartData = {
-        labels: labels,
-        datasets: [{
-          label: 'Cycle Time',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          data: cycleTimesData,
-          fill: true,
-          lineTension: 0.3,
-          borderWidth: 2
-        }]
-      };
+      const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      polyline.setAttribute("points", points.map(p => `${p.x},${p.y}`).join(" "));
+      polyline.setAttribute("fill", "none");
+      polyline.setAttribute("stroke", "#60a5fa");
+      polyline.setAttribute("stroke-width", "3");
+      polyline.setAttribute("stroke-linecap", "round");
+      polyline.setAttribute("stroke-linejoin", "round");
+      svg.appendChild(polyline);
 
-      const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: 'Time (in minutes)',
-              font: {
-                size: 14,
-                weight: 'bold'
-              }
-            }
-          },
-          x: {
-            title: {
-              display: true,
-              text: 'Cycle Number',
-              font: {
-                size: 14,
-                weight: 'bold'
-              }
-            }
-          }
-        },
-        plugins: {
-          title: {
-            display: true,
-            text: 'Cycle Time vs. Cycle Number',
-            font: {
-              size: 18,
-              weight: 'bold'
-            }
-          }
+      for (const point of points) {
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", point.x);
+        circle.setAttribute("cy", point.y);
+        circle.setAttribute("r", 5);
+        circle.setAttribute("fill", "#93c5fd");
+        circle.setAttribute("stroke", "#1d4ed8");
+        circle.setAttribute("stroke-width", "2");
+        svg.appendChild(circle);
+      }
+    }
+
+    function exportCSV() {
+      if (!cycles.length) {
+        showMessage("error", "No cycle data available to export.");
+        return;
+      }
+
+      const headers = ["Cycle Number", "Part/Process", "Shift", "Start Time", "End Time", "Cycle Time (min)", "Target (min)", "Status"];
+      const rows = cycles.map(c => [
+        c.cycleNumber,
+        c.partName,
+        c.shift,
+        c.startTime,
+        c.endTime,
+        c.cycleMinutes.toFixed(3),
+        c.targetMinutes.toFixed(2),
+        c.withinTarget ? "Within Target" : "Over Target"
+      ]);
+
+      const csv = [headers, ...rows]
+        .map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `cycle-time-data-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showMessage("success", "CSV exported.");
+    }
+
+    function refreshUI() {
+      updateKPIs();
+      updateTable();
+      updateChart();
+      els.deleteBtn.disabled = cycles.length === 0;
+      els.exportBtn.disabled = cycles.length === 0;
+    }
+
+    async function registerServiceWorker() {
+      if ("serviceWorker" in navigator) {
+        try {
+          await navigator.serviceWorker.register("./service-worker.js");
+          console.log("Service worker registered");
+        } catch (error) {
+          console.error("Service worker registration failed:", error);
         }
-      };
-
-      // Check if the chart instance already exists
-      const existingChart = window.myLine;
-      if (existingChart) {
-        // Update the chart data and options
-        existingChart.data = chartData;
-        existingChart.options = chartOptions;
-        existingChart.update();
-      } else {
-        // Create a new chart instance
-        window.myLine = new Chart(ctx, {
-          type: 'line',
-          data: chartData,
-          options: chartOptions
-        });
       }
     }
-function clearData() {
-      // Clear cycle times array
-      cycleTimes.length = 0;
 
-      // Reset parts inspected counter
-      partsInspected = 0;
-      document.getElementById("partsInspected").textContent = "0";
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      deferredPrompt = event;
+      els.installBtn.style.display = "inline-block";
+    });
 
-      // Clear error message if displayed
-      document.getElementById("errorMsg").style.display = "none";
+    els.installBtn.addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      els.installBtn.style.display = "none";
+    });
 
-      // Clear cycle times table
-      updateCycleTimesTable();
+    els.startBtn.addEventListener("click", startTimer);
+    els.stopBtn.addEventListener("click", stopTimer);
+    els.deleteBtn.addEventListener("click", deleteLastCycle);
+    els.clearBtn.addEventListener("click", clearData);
+    els.exportBtn.addEventListener("click", exportCSV);
 
-      // Clear summary table
-      updateSummaryTable();
+    els.partName.addEventListener("input", saveSettings);
+    els.targetCycle.addEventListener("input", () => { saveSettings(); refreshUI(); });
+    els.shift.addEventListener("change", saveSettings);
 
-      // Clear line graph
-      const chart = window.myLine;
-      if (chart) {
-        chart.destroy(); // Destroy the existing chart instance
-        document.getElementById("chartContainer").innerHTML = '<canvas id="cycleTimeChart"></canvas>'; // Recreate the chart canvas
-      }
-
-      // Reset start and end time
-      startTime = null;
-      endTime = null;
-      timerRunning = false;
-
-      // Reset running time
-      runningTime = 0;
-      document.getElementById("runningTime").textContent = "0:00:000";
-    }
+    loadData();
+    setStatus(false);
+    refreshUI();
+    registerServiceWorker();
   </script>
 </body>
 </html>
